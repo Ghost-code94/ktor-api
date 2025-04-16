@@ -11,9 +11,15 @@ RUN mvn --batch-mode clean package -DskipTests
 # Stage 2: Create a lightweight runtime image using a JRE
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+
+# Set the default PORT environment variable so the application can read it.
+ENV PORT=8080
+
 # Copy the packaged JAR from the build stage
 COPY --from=build /app/target/cache-pipeline-0.0.1-SNAPSHOT.jar app.jar
-# Expose port 8080 (adjust if different)
+
+# Expose the port defined by the PORT env variable (cannot use env in EXPOSE, so we use the default value)
 EXPOSE 8080
+
 # Run the application
 CMD ["java", "-jar", "app.jar"]
