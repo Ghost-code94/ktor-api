@@ -14,8 +14,9 @@ fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
 
     embeddedServer(Netty, port = port) {
-        install(DefaultHeaders)
-        install(CallLogging)
+        // Provide an empty lambda as configuration.
+        install(DefaultHeaders) { }
+        install(CallLogging) { }
         routing {
             get("/") {
                 call.respondText("Hello, world!", ContentType.Text.Plain)
