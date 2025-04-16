@@ -1,1 +1,1 @@
-# ktor-api
+Cache-Pipeline API is a lightweight, edge-optimized server built with Kotlin and Ktor. Designed to run efficiently in containerized and cloud environments, it serves as a starting point for building fast, scalable APIs. Currently, it provides a simple "Hello, world!" endpoint and can be extended with additional routes and functionality as required.
