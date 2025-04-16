@@ -3,8 +3,8 @@ package ghostcache.api
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.http.*
@@ -14,7 +14,6 @@ fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
 
     embeddedServer(Netty, port = port) {
-        // Provide an empty lambda as configuration.
         install(DefaultHeaders) { }
         install(CallLogging) { }
         routing {
