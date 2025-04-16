@@ -51,3 +51,6 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:latest ${{ env.PACKAGE_DIRECTORY }}
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:latest
