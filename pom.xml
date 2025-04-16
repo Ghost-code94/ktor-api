@@ -28,17 +28,17 @@
             <version>${kotlin.version}</version>
         </dependency>
 
-        <!-- Ktor Server Core -->
+        <!-- Ktor Server Core (JVM) -->
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-core</artifactId>
+            <artifactId>ktor-server-core-jvm</artifactId>
             <version>${ktor.version}</version>
         </dependency>
         
-        <!-- Ktor Server Netty Engine -->
+        <!-- Ktor Server Netty Engine (JVM) -->
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-netty</artifactId>
+            <artifactId>ktor-server-netty-jvm</artifactId>
             <version>${ktor.version}</version>
         </dependency>
         
@@ -49,16 +49,16 @@
             <version>1.2.10</version>
         </dependency>
 
-        <!-- If you use content negotiation (e.g. JSON) -->
+        <!-- Ktor Serialization (Gson) for JVM -->
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-serialization-gson</artifactId>
+            <artifactId>ktor-serialization-gson-jvm</artifactId>
             <version>${ktor.version}</version>
         </dependency>
     </dependencies>
 
     <build>
-        <!-- Change source directory to Kotlin (if your code is in src/main/kotlin) -->
+        <!-- Adjusted source directory if your Kotlin files are in src/main/kotlin -->
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <plugins>
             <!-- Maven Compiler Plugin for Java -->
