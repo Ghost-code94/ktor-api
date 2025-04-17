@@ -19,6 +19,9 @@
         <kotlin.version>2.1.20</kotlin.version>
         <ktor.version>3.1.2</ktor.version>
         <grpc-netty.version>1.72.0</grpc-netty.version>
+        <grpc-kotlin.version>1.4.1</grpc-kotlin.version>
+        <protobuf.version>3.23.4</protobuf.version>
+        <grpc-java.version>1.56.0</grpc-java.version>
     </properties>
 
     <dependencies>
@@ -43,6 +46,7 @@
             <version>${ktor.version}</version>
         </dependency>
 
+        <!-- gRPC & Protobuf -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty</artifactId>
@@ -61,9 +65,9 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-kotlin-stub</artifactId>
-            <version>1.4.1</version>
+            <version>${grpc-kotlin.version}</version>
         </dependency>
-        
+
         <!-- Logging with Logback for Ktor -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -92,35 +96,52 @@
     </dependencies>
 
     <build>
+        <!-- OS detector extension must run before plugins -->
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.0</version>
+            </extension>
+        </extensions>
+
         <!-- Source directory for Kotlin code -->
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <plugins>
+            <!-- Detect OS classifier -->
             <plugin>
-            <groupId>org.xolstice.maven.plugins</groupId>
-            <artifactId>protobuf-maven-plugin</artifactId>
-            <version>0.6.1</version>
-            <configuration>
-                <protocArtifact>com.google.protobuf:protoc:3.23.4:exe:${os.detected.classifier}</protocArtifact>
-                <pluginId>grpc-java</pluginId>
-                <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.56.0:exe:${os.detected.classifier}</pluginArtifact>
-            </configuration>
-            <executions>
-                <execution>
-                <goals>
-                    <goal>compile</goal>
-                    <goal>compile-custom</goal>
-                </goals>
-                </execution>
-            </executions>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>detect</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
+            <!-- Protobuf and gRPC code generation -->
             <plugin>
-            <groupId>com.google.osdetector</groupId>
-            <artifactId>os-maven-plugin</artifactId>
-            <version>1.7.1</version>
-            <executions>
-                <execution><goals><goal>detect</goal></goals></execution>
-            </executions>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc-java.version}:exe:${os.detected.classifier}</pluginArtifact>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
             <!-- Maven Compiler Plugin for Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -132,6 +153,7 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
+
             <!-- Kotlin Maven Plugin -->
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -154,13 +176,15 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Shade plugin for uber-jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.6.0</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>package</execution-phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
