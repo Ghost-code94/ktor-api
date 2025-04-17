@@ -1,5 +1,5 @@
 # Stage 1: Build the application using Maven with a JDK
-FROM maven:3.9.0-eclipse-temurin-17-alpine AS build
+FROM maven:3.9.0-eclipse-temurin-17 AS build
 WORKDIR /app
 # Cache pom.xml and download dependencies
 COPY pom.xml .
@@ -15,6 +15,8 @@ WORKDIR /app
 # Set the default PORT environment variable so the application can read it.
 ENV PORT=8080
 ENV GRPC_PORT=50051
+ARG REDIS_URL
+ENV REDIS_URL=$REDIS_URL
 
 # Copy the packaged JAR from the build stage
 COPY --from=build /app/target/cache-pipeline-0.0.1-SNAPSHOT.jar app.jar
