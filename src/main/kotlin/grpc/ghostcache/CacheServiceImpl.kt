@@ -63,11 +63,15 @@ class CacheServiceImpl(
         val key = request.key
         // determine which version to fetch
         val versionId = if (request.version.isBlank()) {
-            // pick most recent
-            val latest: Set<ByteArray> =
-                redis.zrevrange(versionSetKey(key), 0, 0)
-            if (latest.isEmpty()) return GetReply.newBuilder().setFound(false).build()
-            latest.first().decodeToString()
+            // pick most recent — zrevrange returns List<ByteArray>
+            val latest: List<ByteArray> = redis.zrevrange(versionSetKey(key), 0, 0)
+            if (latest.isEmpty()) {
+                return GetReply.newBuilder()
+                    .setFound(false)
+                    .build()
+            }
+            // convert the first entry back to string
+            String(latest[0])
         } else {
             request.version
         }
@@ -80,7 +84,9 @@ class CacheServiceImpl(
                 .setValue(ByteString.copyFrom(data))
                 .build()
         } else {
-            GetReply.newBuilder().setFound(false).build()
+            GetReply.newBuilder()
+                .setFound(false)
+                .build()
         }
     }
 
