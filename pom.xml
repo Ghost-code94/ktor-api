@@ -184,7 +184,7 @@
                 <version>3.6.0</version>
                 <executions>
                     <execution>
-                        <phase>package</execution-phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
