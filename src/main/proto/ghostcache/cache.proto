@@ -1,8 +1,8 @@
-syntax = "proto3";                          // 1
+syntax = "proto3";
+package ghostcache;
 
-package ghostcache;                         // 2
-
-option java_package = "grpc.ghostcache"; // 3
+option java_package   = "ghostcache";
+option kotlin_package = "ghostcache";
 option java_multiple_files = true;          // 4
 
 service CacheService {                      // 5
