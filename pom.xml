@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <kotlin.version>2.1.20</kotlin.version>
-        <!-- <ktor.version>3.1.2</ktor.version> -->
+        <ktor.version>3.1.2</ktor.version>
         <grpc-netty.version>1.72.0</grpc-netty.version>
         <grpc-java.version>1.56.0</grpc-java.version>
         <grpc-kotlin.version>1.4.1</grpc-kotlin.version>
@@ -40,7 +40,7 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-core-jvm</artifactId>
             <version>${ktor.version}</version>
@@ -49,7 +49,7 @@
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-netty-jvm</artifactId>
             <version>${ktor.version}</version>
-        </dependency> -->
+        </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty</artifactId>
@@ -75,7 +75,7 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.10</version>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-serialization-gson-jvm</artifactId>
             <version>${ktor.version}</version>
@@ -89,7 +89,7 @@
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-call-logging-jvm</artifactId>
             <version>${ktor.version}</version>
-        </dependency> -->
+        </dependency>
     </dependencies>
 
     <build>
@@ -125,23 +125,19 @@
                 <version>0.6.1</version>
                 <configuration>
                     <!-- Core protoc compiler -->
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>
+                        com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}
+                    </protocArtifact>
 
                     <!-- Java gRPC plugin -->
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc-java.version}:exe:${os.detected.classifier}</pluginArtifact>
+                    <pluginArtifact>
+                        io.grpc:protoc-gen-grpc-java:${grpc-java.version}:exe:${os.detected.classifier}
+                    </pluginArtifact>
 
-                    <!-- Kotlin gRPC plugin via protocPlugins -->
-                    <protocPlugins>
-                        <protocPlugin>
-                            <id>grpc-kotlin</id>
-                            <groupId>io.grpc</groupId>
-                            <artifactId>protoc-gen-grpc-kotlin</artifactId>
-                            <version>${grpc-kotlin.version}</version>
-                            <classifier>jdk8</classifier>
-                            <mainClass>io.grpc.kotlin.generator.GeneratorRunner</mainClass>
-                        </protocPlugin>
-                    </protocPlugins>
+                    <!-- Kotlin gRPC plugin -->
+                    <pluginId>grpc-kotlin</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-kotlin:${grpc-kotlin.version}:jdk8@jar</pluginArtifact>
                 </configuration>
                 <executions>
                     <execution>
