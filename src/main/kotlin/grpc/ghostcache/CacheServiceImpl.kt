@@ -1,44 +1,49 @@
 package grpc.ghostcache
 
-import ghostcache.*
+import ghostcache.*                             // your proto types
 import io.grpc.stub.StreamObserver
 import io.lettuce.core.api.sync.RedisCommands
 import com.google.protobuf.ByteString
-import io.grpc.ServerBuilder
-import io.grpc.BindableService
-
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class CacheServiceImpl(
-    private val redis: RedisCommands<String, ByteArray>
+    private val redis: RedisCommands<ByteArray, ByteArray>
 ) : CacheServiceGrpcKt.CacheServiceCoroutineImplBase() {
 
     override suspend fun get(request: GetRequest): GetReply {
-        val data = redis.get(request.key)
+        val data = redis.get(request.key.toByteArray())
         return if (data != null) {
             GetReply.newBuilder()
                 .setFound(true)
                 .setValue(ByteString.copyFrom(data))
                 .build()
         } else {
-            GetReply.newBuilder().setFound(false).build()
+            GetReply.newBuilder()
+                .setFound(false)
+                .build()
         }
     }
 
     override suspend fun put(request: PutRequest): PutReply {
-        redis.setex(request.key, request.ttlSec, request.value.toByteArray())
+        redis.setex(request.key.toByteArray(), request.ttlSec.toLong(), request.value.toByteArray())
         return PutReply.newBuilder().setOk(true).build()
     }
 
     override suspend fun invalidate(request: InvalidateRequest): InvalidateReply {
-        val result = redis.del(request.key) > 0
+        val result = redis.del(request.key.toByteArray()) > 0
         return InvalidateReply.newBuilder().setOk(result).build()
     }
 
-    override fun listKeys(request: Empty, responseObserver: StreamObserver<KeyEntry>) {
+    // Server‐streaming → return a Flow<KeyEntry>
+    override fun listKeys(request: Empty): Flow<KeyEntry> = flow {
         val cursor = redis.scan()
-        cursor.forEach { key ->
-            responseObserver.onNext(KeyEntry.newBuilder().setKey(key).build())
+        for (keyBytes in cursor) {
+            emit(
+                KeyEntry.newBuilder()
+                    .setKey(String(keyBytes))
+                    .build()
+            )
         }
-        responseObserver.onCompleted()
     }
 }
