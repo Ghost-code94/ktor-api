@@ -1,44 +1,70 @@
 syntax = "proto3";
+
 package ghostcache;
+option java_package = "grpc.ghostcache";
+option java_multiple_files = true;
 
-option java_multiple_files = true;          // 4
+//-----------------------------------------------------------------------------
+// service definition
+service CacheService {
+  rpc Get(GetRequest) returns (GetReply);
+  rpc Put(PutRequest) returns (PutReply);
+  rpc Invalidate(InvalidateRequest) returns (InvalidateReply);
+  rpc ListKeys(Empty) returns (stream KeyEntry);
 
-service CacheService {                      // 5
-  rpc Get(GetRequest) returns (GetReply);            // a
-  rpc Put(PutRequest) returns (PutReply);            // b
-  rpc Invalidate(InvalidateRequest) returns (InvalidateReply); // c
-  rpc ListKeys(Empty) returns (stream KeyEntry);     // d
+  // new versioning methods
+  rpc GetVersioned(VersionedGetRequest) returns (GetReply);
+  rpc History(GetRequest) returns (HistoryReply);
+  rpc Rollback(VersionedGetRequest) returns (PutReply);
 }
 
-message Empty {}                            // 6
+//-----------------------------------------------------------------------------
+// common messages
+message Empty {}
 
-message GetRequest {                        // 7
-  string key = 1;                           //  a field numbered 1
+message GetRequest {
+  string key = 1;
 }
 
-message GetReply {                          // 8
+message GetReply {
   bool   found = 1;
-  bytes  value = 2;                         // binary payload
+  bytes  value = 2;
 }
 
-message PutRequest {                        // 9
+message PutRequest {
   string key    = 1;
   bytes  value  = 2;
-  int32  ttlSec = 3;                        // TTL in seconds
+  int32  ttlSec = 3;
 }
 
-message PutReply {                          // 10
+message PutReply {
   bool ok = 1;
 }
 
-message InvalidateRequest {                 // 11
+message InvalidateRequest {
   string key = 1;
 }
 
-message InvalidateReply {                   // 12
+message InvalidateReply {
   bool ok = 1;
 }
 
-message KeyEntry {                          // 13
+message KeyEntry {
   string key = 1;
+}
+
+//-----------------------------------------------------------------------------
+// versioning messages
+message VersionedGetRequest {
+  string key     = 1;
+  string version = 2;  // if empty, return latest
+}
+
+message HistoryEntry {
+  string version   = 1;
+  int64  timestamp = 2;
+}
+
+message HistoryReply {
+  repeated HistoryEntry versions = 1;
 }
