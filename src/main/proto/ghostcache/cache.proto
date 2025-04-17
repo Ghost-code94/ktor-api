@@ -1,0 +1,46 @@
+syntax = "proto3";                          // 1
+
+package ghostcache;                         // 2
+
+option java_package = "gov.cdc.ghostcache"; // 3
+option java_multiple_files = true;          // 4
+
+service CacheService {                      // 5
+  rpc Get(GetRequest) returns (GetReply);            // a
+  rpc Put(PutRequest) returns (PutReply);            // b
+  rpc Invalidate(InvalidateRequest) returns (InvalidateReply); // c
+  rpc ListKeys(Empty) returns (stream KeyEntry);     // d
+}
+
+message Empty {}                            // 6
+
+message GetRequest {                        // 7
+  string key = 1;                           //  a field numbered 1
+}
+
+message GetReply {                          // 8
+  bool   found = 1;
+  bytes  value = 2;                         // binary payload
+}
+
+message PutRequest {                        // 9
+  string key    = 1;
+  bytes  value  = 2;
+  int32  ttlSec = 3;                        // TTL in seconds
+}
+
+message PutReply {                          // 10
+  bool ok = 1;
+}
+
+message InvalidateRequest {                 // 11
+  string key = 1;
+}
+
+message InvalidateReply {                   // 12
+  bool ok = 1;
+}
+
+message KeyEntry {                          // 13
+  string key = 1;
+}

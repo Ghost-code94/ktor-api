@@ -14,12 +14,14 @@ WORKDIR /app
 
 # Set the default PORT environment variable so the application can read it.
 ENV PORT=8080
+ENV GRPC_PORT=50051
 
 # Copy the packaged JAR from the build stage
 COPY --from=build /app/target/cache-pipeline-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the port defined by the PORT env variable (cannot use env in EXPOSE, so we use the default value)
 EXPOSE 8080
+EXPOSE 50051
 
 # Run the application
 CMD ["java", "-jar", "app.jar"]

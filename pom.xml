@@ -18,6 +18,7 @@
         <java.version>17</java.version>
         <kotlin.version>2.1.20</kotlin.version>
         <ktor.version>3.1.2</ktor.version>
+        <grpc-netty.version>1.72.0</grpc-netty.version>
     </properties>
 
     <dependencies>
@@ -40,6 +41,27 @@
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-netty-jvm</artifactId>
             <version>${ktor.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+            <version>${grpc-netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${grpc-netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${grpc-netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-kotlin-stub</artifactId>
+            <version>1.4.1</version>
         </dependency>
         
         <!-- Logging with Logback for Ktor -->
@@ -72,6 +94,32 @@
     <build>
         <!-- Source directory for Kotlin code -->
         <sourceDirectory>src/main/kotlin</sourceDirectory>
+        <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.6.1</version>
+        <configuration>
+            <protocArtifact>com.google.protobuf:protoc:3.23.4:exe:${os.detected.classifier}</protocArtifact>
+            <pluginId>grpc-java</pluginId>
+            <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.56.0:exe:${os.detected.classifier}</pluginArtifact>
+        </configuration>
+        <executions>
+            <execution>
+            <goals>
+                <goal>compile</goal>
+                <goal>compile-custom</goal>
+            </goals>
+            </execution>
+        </executions>
+        </plugin>
+        <plugin>
+        <groupId>com.google.osdetector</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.7.1</version>
+        <executions>
+            <execution><goals><goal>detect</goal></goals></execution>
+        </executions>
+        </plugin>
         <plugins>
             <!-- Maven Compiler Plugin for Java -->
             <plugin>
