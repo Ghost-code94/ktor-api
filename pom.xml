@@ -125,19 +125,23 @@
                 <version>0.6.1</version>
                 <configuration>
                     <!-- Core protoc compiler -->
-                    <protocArtifact>
-                        com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}
-                    </protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
 
                     <!-- Java gRPC plugin -->
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>
-                        io.grpc:protoc-gen-grpc-java:${grpc-java.version}:exe:${os.detected.classifier}
-                    </pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc-java.version}:exe:${os.detected.classifier}</pluginArtifact>
 
-                    <!-- Kotlin gRPC plugin -->
-                    <pluginId>grpc-kotlin</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-kotlin:${grpc-kotlin.version}:jdk8@jar</pluginArtifact>
+                    <!-- Kotlin gRPC plugin via protocPlugins -->
+                    <protocPlugins>
+                        <protocPlugin>
+                            <id>grpc-kotlin</id>
+                            <groupId>io.grpc</groupId>
+                            <artifactId>protoc-gen-grpc-kotlin</artifactId>
+                            <version>${grpc-kotlin.version}</version>
+                            <classifier>jdk8</classifier>
+                            <mainClass>io.grpc.kotlin.generator.GeneratorRunner</mainClass>
+                        </protocPlugin>
+                    </protocPlugins>
                 </configuration>
                 <executions>
                     <execution>
