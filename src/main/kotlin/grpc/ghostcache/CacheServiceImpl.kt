@@ -37,8 +37,9 @@ class CacheServiceImpl(
 
     // Server‐streaming → return a Flow<KeyEntry>
     override fun listKeys(request: Empty): Flow<KeyEntry> = flow {
-        val cursor = redis.scan()
-        for (keyBytes in cursor) {
+        val cursor = redis.scan()                      // KeyScanCursor<ByteArray>
+        // `cursor.keys` is a List<ByteArray>, so it's unambiguous
+        for (keyBytes in cursor.keys) {
             emit(
                 KeyEntry.newBuilder()
                     .setKey(String(keyBytes))

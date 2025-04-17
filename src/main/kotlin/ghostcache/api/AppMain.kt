@@ -2,7 +2,7 @@ package ghostcache.api
 
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.application.install             // ← needed for install()
+import io.ktor.server.application.install
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.routing.routing
@@ -10,7 +10,9 @@ import io.ktor.server.routing.get
 import io.ktor.server.response.respondText
 import io.ktor.http.ContentType
 
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
+// <-- use the un‑shaded NettyServerBuilder
+import io.grpc.netty.NettyServerBuilder
+
 import grpc.ghostcache.CacheServiceImpl
 
 import io.lettuce.core.RedisClient
@@ -23,10 +25,10 @@ fun main() {
 
     // Redis Setup
     val client = RedisClient.create(redisUri)
-    val connection = client.connect(ByteArrayCodec())   // ← one codec only
-    val commands = connection.sync()                    // RedisCommands<ByteArray, ByteArray>
+    val connection = client.connect(ByteArrayCodec())
+    val commands = connection.sync()
 
-    // gRPC Server (Netty transport)
+    // gRPC Server (un‑shaded Netty transport)
     val grpcServer = NettyServerBuilder
         .forPort(grpcPort)
         .addService(CacheServiceImpl(commands))
@@ -46,7 +48,6 @@ fun main() {
     }.start()
     println("HTTP server listening on port $httpPort")
 
-    // Shutdown hook
     Runtime.getRuntime().addShutdownHook(Thread {
         ktorServer.stop(1_000, 2_000)
         grpcServer.shutdown()
