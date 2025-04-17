@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <kotlin.version>2.1.20</kotlin.version>
-        <ktor.version>3.1.2</ktor.version>
+        <!-- <ktor.version>3.1.2</ktor.version> -->
         <grpc-netty.version>1.72.0</grpc-netty.version>
         <grpc-java.version>1.56.0</grpc-java.version>
         <grpc-kotlin.version>1.4.1</grpc-kotlin.version>
@@ -75,7 +75,7 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.10</version>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-serialization-gson-jvm</artifactId>
             <version>${ktor.version}</version>
@@ -89,7 +89,7 @@
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-call-logging-jvm</artifactId>
             <version>${ktor.version}</version>
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <build>
