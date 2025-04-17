@@ -137,9 +137,7 @@
 
                     <!-- Kotlin gRPC plugin -->
                     <pluginId>grpc-kotlin</pluginId>
-                    <pluginArtifact>
-                        io.grpc:protoc-gen-grpc-kotlin:${grpc-kotlin.version}:jdk7:${os.detected.classifier}
-                    </pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-kotlin:${grpc-kotlin.version}:exe:${os.detected.classifier}</pluginArtifact>
                 </configuration>
                 <executions>
                     <execution>
