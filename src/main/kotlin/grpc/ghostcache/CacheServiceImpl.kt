@@ -4,6 +4,9 @@ import ghostcache.*
 import io.grpc.stub.StreamObserver
 import io.lettuce.core.api.sync.RedisCommands
 import com.google.protobuf.ByteString
+import io.grpc.ServerBuilder
+import io.grpc.BindableService
+
 
 class CacheServiceImpl(
     private val redis: RedisCommands<String, ByteArray>
