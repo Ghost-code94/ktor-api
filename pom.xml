@@ -22,7 +22,7 @@
         <grpc-java.version>1.56.0</grpc-java.version>
         <grpc-kotlin.version>1.4.1</grpc-kotlin.version>
         <protobuf.version>3.23.4</protobuf.version>
-        <jjwt.version>0.12.6</jjwt.version>
+        <jjwt.version>0.11.5</jjwt.version>
     </properties>
 
     <dependencies>
