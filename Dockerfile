@@ -19,6 +19,8 @@ ENV PORT=8080
 ENV GRPC_PORT=50051
 ARG REDIS_URL
 ENV REDIS_URL=$REDIS_URL
+ARG JWT_SECRET
+ENV JWT_SECRET=$JWT_SECRET
 
 # Copy the packaged JAR from the build stage
 COPY --from=build /app/target/cache-pipeline-0.0.1-SNAPSHOT.jar app.jar
