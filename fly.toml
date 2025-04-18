@@ -28,7 +28,7 @@ primary_region = "dfw"
 
   [[services.ports]]
     port     = 443
-    handlers = ["tls", "http2"]
+    handlers = ["tls"]
 
   # ensure ALPN negotiation for h2
   [services.ports.tls_options]
