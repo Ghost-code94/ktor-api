@@ -15,7 +15,6 @@ RUN apk add --no-cache redis
 WORKDIR /app
 
 # Set the default PORT environment variable so the application can read it.
-ENV PORT=8080
 ENV GRPC_PORT=50051
 ARG REDIS_URL
 ENV REDIS_URL=$REDIS_URL
@@ -29,7 +28,6 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Expose the port defined by the PORT env variable (cannot use env in EXPOSE, so we use the default value)
-EXPOSE 8080
 EXPOSE 50051
 
 # single ENTRYPOINT that launches both Redis and your Ktor+gRPC service
