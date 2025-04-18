@@ -1,20 +1,22 @@
+The Cache-Pipeline API
+
 The Cache-Pipeline API is a lightweight, edge-optimized server built with Kotlin and gRPC, designed for high-performance caching tasks in containerized and cloud environments.
 
 Originally scaffolded with Ktor, this project now exposes a pure gRPC interface and serves as a modular, extensible backend service for any system needing fast, binary-efficient access to cache-like storage.
 
-✅ Features
+Features
 
-🔌 gRPC Server Only — Runs a full gRPC server on a configurable port (default: 50051).
+gRPC Server Only — Runs a full gRPC server on a configurable port (default: 50051).
 
-🚀 Redis-Backed Caching — Uses Redis for fast key-value storage with support for TTL (time-to-live).
+Redis-Backed Caching — Uses Redis for fast key-value storage with support for TTL (time-to-live).
 
-🗂️ Versioned Cache Operations — Supports storing multiple versions of a key, querying history, and rolling back to any prior version.
+Versioned Cache Operations — Supports storing multiple versions of a key, querying history, and rolling back to any prior version.
 
-💡 Protobuf-Defined Interface — RPC endpoints are clearly defined in cache.proto, supporting cross-language clients.
+Protobuf-Defined Interface — RPC endpoints are clearly defined in cache.proto, supporting cross-language clients.
 
-🧪 Portable via Docker — Easily deployable in cloud or local environments using Docker.
+Portable via Docker — Easily deployable in cloud or local environments using Docker.
 
-🛠️ Available RPCs
+Available RPCs
 
 The gRPC service CacheService provides:
 
@@ -52,7 +54,7 @@ Roll back a key to a specified version (restoring its value).
 
 All messages and requests are defined in src/main/proto/ghostcache/cache.proto.
 
-🚀 Getting Started
+Getting Started
 
 Run Redis (locally for dev)
 
@@ -67,9 +69,9 @@ docker run -d \
 
 Replace host.docker.internal with your Redis host or service name if on the same Docker network.
 
-🔧 Calling the API
+Calling the API
 
-You can test the service using grpcurl:
+You can test the service using grpcurl.
 
 List available RPCs
 
@@ -79,14 +81,7 @@ grpcurl -plaintext \
   localhost:50051 \
   list ghostcache.CacheService
 
-Put a value
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -H "authorization: Bearer u4k9wL+Ytqv5H3V7rFZVm1GixHVgqtzWmwJvX4zH+5E=" \
-  -d '{"key":"foo","value":"YmFy","ttlSec":60}' \
-  ktor-api-grpc.fly.dev:50051 \
-  ghostcache.CacheService/Put
+Put a value (no auth)
 
 grpcurl -plaintext \
   -import-path src/main/proto \
@@ -95,7 +90,7 @@ grpcurl -plaintext \
   localhost:50051 \
   ghostcache.CacheService/Put
 
-Get the latest value
+Get the latest value (no auth)
 
 grpcurl -plaintext \
   -import-path src/main/proto \
@@ -104,7 +99,7 @@ grpcurl -plaintext \
   localhost:50051 \
   ghostcache.CacheService/Get
 
-List version history
+List version history (no auth)
 
 grpcurl -plaintext \
   -import-path src/main/proto \
@@ -113,7 +108,7 @@ grpcurl -plaintext \
   localhost:50051 \
   ghostcache.CacheService/History
 
-Get a specific (or latest) version
+Get a specific (or latest) version (no auth)
 
 grpcurl -plaintext \
   -import-path src/main/proto \
@@ -124,7 +119,7 @@ grpcurl -plaintext \
 
 Passing an empty string for version returns the latest.
 
-Rollback to an earlier version
+Rollback to an earlier version (no auth)
 
 grpcurl -plaintext \
   -import-path src/main/proto \
@@ -133,3 +128,27 @@ grpcurl -plaintext \
   localhost:50051 \
   ghostcache.CacheService/Rollback
 
+Authorization
+
+This service can be secured with JWT-based authentication. To require and validate tokens, a JwtAuthInterceptor is applied to the gRPC server. All RPCs then expect an authorization: Bearer <token> metadata header.
+
+Generating a Token
+
+create an HS256 token signed with your JWT_SECRET. Example header:
+
+export JWT_SECRET="<your-base64-secret>"
+
+Calling with Authorization
+
+grpcurl -insecure \
+  -authority localhost:50051 \
+  -import-path src/main/proto \
+  -proto ghostcache/cache.proto \
+  -H "authorization: Bearer <your-jwt>" \
+  -d '{"key":"foo","value":"YmFy","ttlSec":60}' \
+  localhost:50051 \
+  ghostcache.CacheService/Put
+
+Calls without a valid token will return UNAUTHENTICATED.
+
+Ensure you hit the correct port and use -insecure or trust your TLS certificate when running in production.

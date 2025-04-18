@@ -6,27 +6,31 @@ primary_region = "dfw"
 [build]
 
 [env]
-  # Redis sidecar URL (or your Upstash/Fly Redis endpoint)
   REDIS_URL  = "redis://localhost:6379"
 
-# HTTP (Ktor) service on port 80/443 → internal 8080
-[http_service]
-  internal_port        = 8080
-  force_https          = true
-  auto_stop_machines   = "stop"
-  auto_start_machines  = true
-  min_machines_running = 0
-  processes            = ["app"]
+[[services]]
+  internal_port = 8080
+  protocol      = "tcp"
 
-# gRPC service on TLS+HTTP/2 (ALPN=h2) port 443 → internal 50051
+  # HTTP (insecure)
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  # HTTPS (TLS + HTTP/1)
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
 [[services]]
   internal_port = 50051
   protocol      = "tcp"
 
   [[services.ports]]
-    handlers = ["tls"]
     port     = 443
+    handlers = ["tls", "http2"]
 
+  # ensure ALPN negotiation for h2
   [services.ports.tls_options]
     alpn = ["h2"]
 
