@@ -33,8 +33,8 @@ fun main() {
     // gRPC Server (un‑shaded Netty transport)
     val grpcServer = NettyServerBuilder
         .forPort(grpcPort)
-        .addService(CacheServiceImpl(commands))
         .intercept(JwtAuthInterceptor(jwtSecret))
+        .addService(CacheServiceImpl(commands))
         .build()
         .start()
     println("gRPC server listening on port $grpcPort")
