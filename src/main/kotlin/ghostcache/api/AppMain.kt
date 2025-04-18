@@ -9,11 +9,11 @@ import io.ktor.server.routing.routing
 import io.ktor.server.routing.get
 import io.ktor.server.response.respondText
 import io.ktor.http.ContentType
-
 // <-- use the un‑shaded NettyServerBuilder
 import io.grpc.netty.NettyServerBuilder
 
 import grpc.ghostcache.CacheServiceImpl
+import grpc.ghostcache.auth.JwtAuthInterceptor
 
 import io.lettuce.core.RedisClient
 import io.lettuce.core.codec.ByteArrayCodec
@@ -22,6 +22,8 @@ fun main() {
     val httpPort = System.getenv("PORT")?.toInt() ?: 8080
     val grpcPort = System.getenv("GRPC_PORT")?.toInt() ?: 50051
     val redisUri = System.getenv("REDIS_URL") ?: "redis://localhost:6379"
+    val jwtSecret = System.getenv("JWT_SECRET") 
+        ?: error("JWT_SECRET env var not set")
 
     // Redis Setup
     val client = RedisClient.create(redisUri)
@@ -32,6 +34,7 @@ fun main() {
     val grpcServer = NettyServerBuilder
         .forPort(grpcPort)
         .addService(CacheServiceImpl(commands))
+        .intercept(JwtAuthInterceptor(jwtSecret))
         .build()
         .start()
     println("gRPC server listening on port $grpcPort")
