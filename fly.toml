@@ -1,18 +1,15 @@
-# fly.toml app configuration file generated for ktor-api-grpc on 2025-04-18T00:30:00Z
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
+# fly.toml for ktor-api-grpc on 2025-04-18T00:30:00Z
 
 app = "ktor-api-grpc"
 primary_region = "dfw"
 
 [build]
 
-# ← Add your runtime env vars here
 [env]
-  # Redis sidecar URL (or change to your Upstash/Fly Redis endpoint)
-  REDIS_URL = "redis://localhost:6379"
+  # Redis sidecar URL (or your Upstash/Fly Redis endpoint)
+  REDIS_URL  = "redis://localhost:6379"
 
+# HTTP (Ktor) service on port 80/443 → internal 8080
 [http_service]
   internal_port        = 8080
   force_https          = true
@@ -21,6 +18,19 @@ primary_region = "dfw"
   min_machines_running = 0
   processes            = ["app"]
 
+# gRPC service on TLS+HTTP/2 (ALPN=h2) port 443 → internal 50051
+[[services]]
+  internal_port = 50051
+  protocol      = "tcp"
+
+  [[services.ports]]
+    handlers = ["tls"]
+    port     = 443
+
+  [services.ports.tls_options]
+    alpn = ["h2"]
+
+# VM sizing
 [[vm]]
   memory     = "1gb"
   cpu_kind   = "shared"

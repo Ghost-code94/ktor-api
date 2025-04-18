@@ -80,6 +80,13 @@ grpcurl -plaintext \
   list ghostcache.CacheService
 
 Put a value
+grpcurl -plaintext \
+  -import-path src/main/proto \
+  -proto ghostcache/cache.proto \
+  -H "authorization: Bearer u4k9wL+Ytqv5H3V7rFZVm1GixHVgqtzWmwJvX4zH+5E=" \
+  -d '{"key":"foo","value":"YmFy","ttlSec":60}' \
+  ktor-api-grpc.fly.dev:50051 \
+  ghostcache.CacheService/Put
 
 grpcurl -plaintext \
   -import-path src/main/proto \
