@@ -47,18 +47,19 @@ class CacheServiceImpl(
         redis.hset(dataHash, versionId.toByteArray(), request.value.toByteArray())
 
         // 3) prune old versions if we’ve exceeded maxVersions
-        val count = redis.zcard(versions)
+        val count: Long = redis.zcard(versions)
         if (count > maxVersions) {
-            val excess = (count - maxVersions).toInt()
+            // compute how many to drop
+            val excess: Long = count - maxVersions
 
-            // 3a) fetch the oldest version‐IDs
-            val oldIds: List<ByteArray> = redis.zrange(versions, 0, excess - 1)
+            // pull the oldest `excess` IDs
+            val oldIds: List<ByteArray> = redis.zrange(versions, 0L, excess - 1)
 
-            // 3b) remove them from the sorted set
-            redis.zremrangeByRank(versions, 0, excess - 1)
+            // remove them from the sorted set
+            redis.zremrangeByRank(versions, 0L, excess - 1)
 
-            // 3c) delete their payloads from the hash
-            oldIds.forEach { id -> 
+            // delete their blobs from the hash
+            oldIds.forEach { id ->
                 redis.hdel(dataHash, id)
             }
         }
