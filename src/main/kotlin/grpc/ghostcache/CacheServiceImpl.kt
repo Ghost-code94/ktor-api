@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 
 class CacheServiceImpl(
     private val redis: RedisCommands<ByteArray, ByteArray>,
-    private val maxVersions: Long = 10
+    private val maxVersions: Int = 10
 ) : CacheServiceGrpcKt.CacheServiceCoroutineImplBase() {
 
     // Redis key helpers
