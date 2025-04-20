@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.flow
 
 class CacheServiceImpl(
     private val redis: RedisCommands<ByteArray, ByteArray>
+    private val maxVersions: Long = 10
 ) : CacheServiceGrpcKt.CacheServiceCoroutineImplBase() {
 
     // Redis key helpers
@@ -32,17 +33,39 @@ class CacheServiceImpl(
     }
 
     override suspend fun put(request: PutRequest): PutReply {
+        val key       = request.key
+        val rawKey    = rawKey(key)
+        val versions  = versionSetKey(key)
+        val dataHash  = dataHashKey(key)
+
         // 1) store the live value with TTL
-        redis.setex(rawKey(request.key), request.ttlSec.toLong(), request.value.toByteArray())
+        redis.setex(rawKey, request.ttlSec.toLong(), request.value.toByteArray())
 
-        // 2) record a new version (timestamp as version id)
-        val version = System.currentTimeMillis().toString()
-        // score with timestamp for ordering
-        redis.zadd(versionSetKey(request.key), version.toDouble(), version.toByteArray())
-        // keep the versioned blob in a hash
-        redis.hset(dataHashKey(request.key), version.toByteArray(), request.value.toByteArray())
+        // 2) record a new version
+        val versionId = System.currentTimeMillis().toString()
+        redis.zadd(versions, versionId.toDouble(), versionId.toByteArray())
+        redis.hset(dataHash, versionId.toByteArray(), request.value.toByteArray())
 
-        return PutReply.newBuilder().setOk(true).build()
+        // 3) prune old versions if we’ve exceeded maxVersions
+        val count = redis.zcard(versions)
+        if (count > maxVersions) {
+            val excess = (count - maxVersions).toInt()
+
+            // 3a) fetch the oldest version‐IDs
+            val oldIds: List<ByteArray> = redis.zrange(versions, 0, excess - 1)
+
+            // 3b) remove them from the sorted set
+            redis.zremrangeByRank(versions, 0, excess - 1)
+
+            // 3c) delete their payloads from the hash
+            oldIds.forEach { id -> 
+                redis.hdel(dataHash, id)
+            }
+        }
+
+        return PutReply.newBuilder()
+            .setOk(true)
+            .build()
     }
 
     override suspend fun invalidate(request: InvalidateRequest): InvalidateReply {
