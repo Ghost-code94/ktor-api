@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class CacheServiceImpl(
-    private val redis: RedisCommands<ByteArray, ByteArray>,
-    private val maxVersions: Long = 100
+    private val redis: RedisCommands<ByteArray, ByteArray>
 ) : CacheServiceGrpcKt.CacheServiceCoroutineImplBase() {
 
     // Redis key helpers
@@ -33,40 +32,17 @@ class CacheServiceImpl(
     }
 
     override suspend fun put(request: PutRequest): PutReply {
-        val key       = request.key
-        val rawKey    = rawKey(key)
-        val versions  = versionSetKey(key)
-        val dataHash  = dataHashKey(key)
-
         // 1) store the live value with TTL
-        redis.setex(rawKey, request.ttlSec.toLong(), request.value.toByteArray())
+        redis.setex(rawKey(request.key), request.ttlSec.toLong(), request.value.toByteArray())
 
-        // 2) record a new version
-        val versionId = System.currentTimeMillis().toString()
-        redis.zadd(versions, versionId.toDouble(), versionId.toByteArray())
-        redis.hset(dataHash, versionId.toByteArray(), request.value.toByteArray())
+        // 2) record a new version (timestamp as version id)
+        val version = System.currentTimeMillis().toString()
+        // score with timestamp for ordering
+        redis.zadd(versionSetKey(request.key), version.toDouble(), version.toByteArray())
+        // keep the versioned blob in a hash
+        redis.hset(dataHashKey(request.key), version.toByteArray(), request.value.toByteArray())
 
-        // 3) prune old versions if we’ve exceeded maxVersions
-        val count: Long = redis.zcard(versions)
-        if (count > maxVersions) {
-            // compute how many to drop
-            val excess: Long = count - maxVersions
-
-            // pull the oldest `excess` IDs
-            val oldIds: List<ByteArray> = redis.zrange(versions, 0L, excess - 1)
-
-            // remove them from the sorted set
-            redis.zremrangeByRank(versions, 0L, excess - 1)
-
-            // delete their blobs from the hash
-            oldIds.forEach { id ->
-                redis.hdel(dataHash, id)
-            }
-        }
-
-        return PutReply.newBuilder()
-            .setOk(true)
-            .build()
+        return PutReply.newBuilder().setOk(true).build()
     }
 
     override suspend fun invalidate(request: InvalidateRequest): InvalidateReply {
