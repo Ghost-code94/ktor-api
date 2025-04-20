@@ -1,154 +1,69 @@
-The Cache-Pipeline API
+# GhostCache gRPC Service
 
-The Cache-Pipeline API is a lightweight, edge-optimized server built with Kotlin and gRPC, designed for high-performance caching tasks in containerized and cloud environments.
+A robust, Redis-backed gRPC caching service with built-in versioning and JWT-based authentication.
 
-Originally scaffolded with Ktor, this project now exposes a pure gRPC interface and serves as a modular, extensible backend service for any system needing fast, binary-efficient access to cache-like storage.
+## 📦 Overview
 
-Features
+GhostCache exposes a simple, high-performance caching API over gRPC. It supports:
 
-gRPC Server Only — Runs a full gRPC server on a configurable port (default: 50051).
+- **Basic Caching Operations**: `get`, `put` (with TTL), `invalidate`, and `listKeys`.
+- **Versioning**: Store and manage historical versions of cached values. Retrieve specific versions, view history, and rollback to previous states.
+- **Security**: Protect access using JSON Web Tokens (JWT), validated by an interceptor on every gRPC call.
 
-Redis-Backed Caching — Uses Redis for fast key-value storage with support for TTL (time-to-live).
+## 🏛️ Architecture
 
-Versioned Cache Operations — Supports storing multiple versions of a key, querying history, and rolling back to any prior version.
+- **`CacheServiceImpl`** (`grpc.ghostcache.CacheServiceImpl`)
+  - Implements the core gRPC service logic against Redis:
+    - Stores live values with expiration and tracks versions in a sorted set and hash.
+    - Retrieves values (latest or specific version), lists all keys, fetches version history, and rolls back to prior versions.
 
-Protobuf-Defined Interface — RPC endpoints are clearly defined in cache.proto, supporting cross-language clients.
+- **`JwtAuthInterceptor`** (`grpc.ghostcache.auth.JwtAuthInterceptor`)
+  - A server interceptor that:
+    - Extracts and validates the `Bearer` token from call metadata.
+    - Parses JWT claims using a signing secret.
+    - Embeds claims into the gRPC context for downstream authorization logic.
 
-Portable via Docker — Easily deployable in cloud or local environments using Docker.
+- **Entrypoint** (`ghostcache.api.Main`)
+  - Reads configuration via environment variables (`GRPC_PORT`, `REDIS_URL`, `JWT_SECRET`).
+  - Initializes a Lettuce Redis client for byte-array operations.
+  - Builds and starts a Netty-based gRPC server with the JWT interceptor and caching service.
+  - Registers a shutdown hook for graceful termination of the server and Redis connection.
 
-Available RPCs
+## 🚀 Getting Started
 
-The gRPC service CacheService provides:
+1. **Clone the repository**:
 
-Method
+   ```bash
+   git clone https://github.com/your-org/ghostcache.git
+   cd ghostcache
+   ```
 
-Description
+2. **Configure environment**:
 
-Put
+   ```bash
+   export GRPC_PORT=50051         # Port for gRPC server (default: 50051)
+   export REDIS_URL=redis://localhost:6379  # Redis URI
+   export JWT_SECRET=your-secret-key        # Secret for JWT validation
+   ```
 
-Store a binary value with a TTL and create a new version entry.
+3. **Build & Run**:
 
-Get
+   ```bash
+   ./gradlew run
+   ```
 
-Retrieve the latest value by key.
+4. **Use the Service**:
 
-GetVersioned
+   Connect any gRPC client and invoke methods defined in the `CacheService` protobuf. Ensure you supply a valid JWT in the `authorization` metadata header.
 
-Retrieve a specific or latest version of a key.
+## 🔧 Configuration
 
-Invalidate
+| Variable    | Description                                      | Default           |
+|-------------|--------------------------------------------------|-------------------|
+| `GRPC_PORT` | Port on which the gRPC server listens            | `50051`           |
+| `REDIS_URL` | Redis connection URI                             | `redis://localhost:6379` |
+| `JWT_SECRET`| Secret key for signing and verifying JWT tokens  | **Required**      |
 
-Delete a key (latest value) from the cache.
+## 📄 License
 
-ListKeys
-
-Stream all current keys from Redis.
-
-History
-
-Stream version history (IDs & timestamps) for a given key.
-
-Rollback
-
-Roll back a key to a specified version (restoring its value).
-
-All messages and requests are defined in src/main/proto/ghostcache/cache.proto.
-
-Getting Started
-
-Run Redis (locally for dev)
-
-docker run --rm -d --name redis-test -p 6379:6379 redis:latest
-
-Run the gRPC server
-
-docker run -d \
-  -p 50051:50051 \
-  -e REDIS_URL=redis://host.docker.internal:6379 \
-  yourdockerrepository/ktor-server-io:latest
-
-Replace host.docker.internal with your Redis host or service name if on the same Docker network.
-
-Calling the API
-
-You can test the service using grpcurl.
-
-List available RPCs
-
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  localhost:50051 \
-  list ghostcache.CacheService
-
-Put a value (no auth)
-
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -d '{"key":"foo","value":"YmFy","ttlSec":60}' \
-  localhost:50051 \
-  ghostcache.CacheService/Put
-
-Get the latest value (no auth)
-
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -d '{"key":"foo"}' \
-  localhost:50051 \
-  ghostcache.CacheService/Get
-
-List version history (no auth)
-
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -d '{"key":"foo"}' \
-  localhost:50051 \
-  ghostcache.CacheService/History
-
-Get a specific (or latest) version (no auth)
-
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -d '{"key":"foo","version":"<VERSION_ID>"}' \
-  localhost:50051 \
-  ghostcache.CacheService/GetVersioned
-
-Passing an empty string for version returns the latest.
-
-Rollback to an earlier version (no auth)
-
-grpcurl -plaintext \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -d '{"key":"foo","version":"<VERSION_ID>"}' \
-  localhost:50051 \
-  ghostcache.CacheService/Rollback
-
-Authorization
-
-This service can be secured with JWT-based authentication. To require and validate tokens, a JwtAuthInterceptor is applied to the gRPC server. All RPCs then expect an authorization: Bearer <token> metadata header.
-
-Generating a Token
-
-create an HS256 token signed with your JWT_SECRET. Example header:
-
-export JWT_SECRET="<your-base64-secret>"
-
-Calling with Authorization
-
-grpcurl -insecure \
-  -authority localhost:50051 \
-  -import-path src/main/proto \
-  -proto ghostcache/cache.proto \
-  -H "authorization: Bearer <your-jwt>" \
-  -d '{"key":"foo","value":"YmFy","ttlSec":60}' \
-  localhost:50051 \
-  ghostcache.CacheService/Put
-
-Calls without a valid token will return UNAUTHENTICATED.
-
-Ensure you hit the correct port and use -insecure or trust your TLS certificate when running in production.
+This project is released under the MIT License. Feel free to use and modify it as needed.
