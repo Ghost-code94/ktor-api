@@ -10,6 +10,9 @@ primary_region = "dfw"
 [[services]]
   internal_port = 50051         # your Netty gRPC server port
   protocol      = "tcp"
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
 
   [[services.ports]]
     port     = 443              # public port
