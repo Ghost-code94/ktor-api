@@ -23,9 +23,15 @@
         <grpc-kotlin.version>1.4.1</grpc-kotlin.version>
         <protobuf.version>3.23.4</protobuf.version>
         <jjwt.version>0.11.5</jjwt.version>
+        <logback-classic.version>1.5.18</logback-classic.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -88,11 +94,6 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-kotlin-stub</artifactId>
             <version>${grpc-kotlin.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.10</version>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
